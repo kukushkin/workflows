@@ -40,7 +40,7 @@ jobs:
           git config --global user.email "github-actions@kukushk.in"
           git config --global user.name "$GITHUB_WORKFLOW"
           git add ${{ inputs.version_filename }}
-          git commit -m "Updated version: ${{ steps.version.outputs.version }}" || echo "SKIPPED"
+          git commit -m "Version is now ${{ steps.version.outputs.version }}" || echo "SKIPPED"
           git push || echo "SKIPPED"
 
       - name: Create a Release ⚡
