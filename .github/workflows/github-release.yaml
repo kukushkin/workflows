@@ -1,0 +1,52 @@
+name: Create a GitHub release
+on:
+  workflow_call:
+    inputs:
+      write_version:
+        type: boolean
+        required: false
+        default: false
+      version_filename:
+        type: string
+        required: false
+        default: "VERSION.txt"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Calculate Version
+        id: version
+        uses: codacy/git-version@2.7.1
+        with:
+          release-branch: main
+          prefix: "v"
+
+      - name: Release Version 🔍
+        run: echo ${{ steps.version.outputs.version }}
+
+      - name: Write VERSION.txt
+        if: inputs.write_version
+        run: |
+          echo "${{ steps.version.outputs.version }}" > ${{ inputs.version_filename }}
+          git config --global user.email "github-actions@kukushk.in"
+          git config --global user.name "$GITHUB_WORKFLOW"
+          git add ${{ inputs.version_filename }}
+          git commit -m "Updated version: ${{ steps.version.outputs.version }}" || echo "SKIPPED"
+          git push || echo "SKIPPED"
+
+      - name: Create a Release ⚡
+        uses: elgohr/Github-Release-Action@v5
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          title: ${{ steps.version.outputs.version }}
+          tag: ${{ steps.version.outputs.version }}
